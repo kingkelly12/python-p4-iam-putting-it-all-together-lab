@@ -7,11 +7,19 @@ from config import app, db, api
 from models import User, Recipe
 from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
+from flask_sqlalchemy import SQLAlchemy
 
 # Initialize the Flask application and database
+def create_app():
+    app = Flask(__name__)
+    app.config['SECRET_KEY'] = 'a\xdb\xd2\x13\x93\xc1\xe9\x97\xef2\xe3\x004U\xd1Z'
+    db.init_app(app)
+    api.init_app(app)
+    return app
+app = create_app()
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False   
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///recipes.db'  # Use SQLite for simplicity
-db.init_app(app)
 migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 

@@ -1,5 +1,5 @@
 from faker import Faker
-import sqlalchemy
+from flask_sqlalchemy import SQLAlchemy
 import flask 
 import pytest
 from random import randint, choice as rc

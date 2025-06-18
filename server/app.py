@@ -1,11 +1,19 @@
 #!/usr/bin/env python3
 
-from flask import request, session, jsonify
+from flask import Flask, request, session, jsonify
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
-
 from config import app, db, api
 from models import User, Recipe
+from flask_migrate import Migrate
+from flask_bcrypt import Bcrypt
+
+# Initialize the Flask application and database
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False   
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///recipes.db'  # Use SQLite for simplicity
+db.init_app(app)
+migrate = Migrate(app, db)
+bcrypt = Bcrypt(app)
 
 class Signup(Resource):
     def post(self):

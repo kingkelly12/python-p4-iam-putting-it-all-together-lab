@@ -1,6 +1,6 @@
 from sqlalchemy.exc import IntegrityError
 import pytest
-
+import sqlalchemy
 from app import app
 from models import db, User, Recipe
 

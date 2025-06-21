@@ -1,13 +1,22 @@
 from faker import Faker
-from flask_sqlalchemy import SQLAlchemy
-import flask 
+import flask
 import pytest
 from random import randint, choice as rc
-
-from app import app
 from models import db, User, Recipe
+from app import create_app
 
-app.secret_key = b'a\xdb\xd2\x13\x93\xc1\xe9\x97\xef2\xe3\x004U\xd1Z'
+@pytest.fixture
+def app():
+    app = create_app()
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    app.config['TESTING'] = True
+
+    with app.app_context():
+        db.create_all()
+        yield app
+        db.session.remove()
+        db.drop_all()
+
 
 class TestSignup:
     '''Signup resource in app.py'''

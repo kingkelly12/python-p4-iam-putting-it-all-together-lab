@@ -1,8 +1,20 @@
 from sqlalchemy.exc import IntegrityError
 import pytest
-from flask_sqlalchemy import SQLAlchemy
-from app import app
 from models import db, User, Recipe
+from app import create_app
+
+@pytest.fixture
+def app():
+    app = create_app()
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'  # fast, in-memory test DB
+    app.config['TESTING'] = True
+
+    with app.app_context():
+        db.create_all()
+        yield app
+        db.session.remove()
+        db.drop_all()
+
 
 class TestUser:
     '''User in models.py'''

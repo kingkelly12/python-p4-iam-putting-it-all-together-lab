@@ -1,33 +1,46 @@
 #!/usr/bin/env python3
 
 from flask import request, session, Flask
-from flask_restful import Resource
+from flask_restful import Resource, Api  # <-- import Api here
 from sqlalchemy.exc import IntegrityError
-from config import app, db, api
+from config import db  # <-- only import db here
 from models import User, Recipe
 from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 
-migrate = Migrate(app, db)
-bcrypt = Bcrypt(app)
+migrate = Migrate()
+bcrypt = Bcrypt()
 
 def create_app():
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
+    migrate.init_app(app, db)
+    bcrypt.init_app(app)
+
+    api = Api(app)  # <-- create a new Api instance for each app
+    api.add_resource(Signup, '/signup', endpoint='signup')
+    api.add_resource(CheckSession, '/check_session', endpoint='check_session')
+    api.add_resource(Login, '/login', endpoint='login')
+    api.add_resource(Logout, '/logout', endpoint='logout')
+    api.add_resource(RecipeIndex, '/recipes', endpoint='recipes')
+
+    @app.route('/hello')
+    def hello():
+        return 'Hello, World!', 200
+
+    return app
     
-    @app.route('/signup', methods=['POST'])
-    def signup():
+class Signup(Resource):
+    def post(self):
         data = request.get_json()
         username = data.get('username')
         password = data.get('password')
         image_url = data.get('image_url')
         bio = data.get('bio')
-
         if not username or not password:
             return {'error': 'Username and password are required.'}, 422
-
         user = User(
             username=username,
             image_url=image_url,
@@ -50,10 +63,6 @@ def create_app():
         except Exception as e:
             db.session.rollback()
             return {'error': str(e)}, 422
-
-    # ... other routes ...
-
-    return app
 
 class CheckSession(Resource):
     def get(self):
@@ -153,11 +162,6 @@ class RecipeIndex(Resource):
             db.session.rollback()
             return {'error': str(e)}, 422
 
-api.add_resource(Signup, '/signup', endpoint='signup')
-api.add_resource(CheckSession, '/check_session', endpoint='check_session')
-api.add_resource(Login, '/login', endpoint='login')
-api.add_resource(Logout, '/logout', endpoint='logout')
-api.add_resource(RecipeIndex, '/recipes', endpoint='recipes')
-
 if __name__ == '__main__':
+    app = create_app()
     app.run(port=5555, debug=True)

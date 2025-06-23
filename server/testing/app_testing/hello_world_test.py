@@ -1,4 +1,5 @@
-from app import app
+from app import create_app
+app = create_app()
 
 def test_hello_world():
     with app.app_context():

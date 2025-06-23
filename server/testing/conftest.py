@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+from server.app import app
 
 def pytest_itemcollected(item):
     par = item.parent.obj

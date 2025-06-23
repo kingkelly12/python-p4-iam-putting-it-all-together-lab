@@ -1,32 +1,24 @@
 #!/usr/bin/env python3
 
-from flask import Flask, request, session, jsonify
+from flask import request, session, Flask
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
 from config import app, db, api
 from models import User, Recipe
 from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
-from flask_sqlalchemy import SQLAlchemy
-
-# Initialize the Flask application and database
-def create_app():
-    app = Flask(__name__)
-    
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False   
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///recipes.db'
-    app.config['SECRET_KEY'] = 'a\xdb\xd2\x13\x93\xc1\xe9\x97\xef2\xe3\x004U\xd1Z'
-    db.init_app(app)
-    api.init_app(app)
-    return app
-
-app = create_app()
 
 migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 
-class Signup(Resource):
-    def post(self):
+def create_app():
+    app = Flask(__name__)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    db.init_app(app)
+    
+    @app.route('/signup', methods=['POST'])
+    def signup():
         data = request.get_json()
         username = data.get('username')
         password = data.get('password')
@@ -58,6 +50,10 @@ class Signup(Resource):
         except Exception as e:
             db.session.rollback()
             return {'error': str(e)}, 422
+
+    # ... other routes ...
+
+    return app
 
 class CheckSession(Resource):
     def get(self):
@@ -162,7 +158,6 @@ api.add_resource(CheckSession, '/check_session', endpoint='check_session')
 api.add_resource(Login, '/login', endpoint='login')
 api.add_resource(Logout, '/logout', endpoint='logout')
 api.add_resource(RecipeIndex, '/recipes', endpoint='recipes')
-
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

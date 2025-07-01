@@ -19,7 +19,7 @@ def app():
 class TestUser:
     '''User in models.py'''
 
-    def test_has_attributes(self):
+    def test_has_attributes(self, app):
         '''has attributes username, _password_hash, image_url, and bio.'''
         
         with app.app_context():
@@ -66,7 +66,7 @@ class TestUser:
             with pytest.raises(AttributeError):
                 created_user.password_hash
 
-    def test_requires_username(self):
+    def test_requires_username(self, app):
         '''requires each record to have a username.'''
 
         with app.app_context():
@@ -79,7 +79,7 @@ class TestUser:
                 db.session.add(user)
                 db.session.commit()
 
-    def test_requires_unique_username(self):
+    def test_requires_unique_username(self, app):
         '''requires each record to have a username.'''
 
         with app.app_context():
@@ -94,7 +94,7 @@ class TestUser:
                 db.session.add_all([user_1, user_2])
                 db.session.commit()
 
-    def test_has_list_of_recipes(self):
+    def test_has_list_of_recipes(self, app):
         '''has records with lists of recipes records attached.'''
 
         with app.app_context():
@@ -103,6 +103,7 @@ class TestUser:
             db.session.commit()
 
             user = User(username="Prabhdip")
+            user.password_hash = "secret"
 
             recipe_1 = Recipe(
                 title="Delicious Shed Ham",

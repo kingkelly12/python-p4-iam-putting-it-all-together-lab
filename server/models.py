@@ -1,9 +1,7 @@
-from flask_sqlalchemy import SQLAlchemy
+from config import db
 from sqlalchemy import CheckConstraint
 from sqlalchemy.orm import validates, relationship
 from werkzeug.security import generate_password_hash, check_password_hash
-
-db = SQLAlchemy()
 
 class User(db.Model):
     __tablename__ = 'users'

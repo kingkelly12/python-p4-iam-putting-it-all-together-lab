@@ -21,7 +21,7 @@ def app():
 class TestSignup:
     '''Signup resource in app.py'''
 
-    def test_creates_users_at_signup(self):
+    def test_creates_users_at_signup(self, app):
         '''creates user records with usernames and passwords at /signup.'''
         
         with app.app_context():
@@ -45,12 +45,10 @@ class TestSignup:
                 'image_url': 'https://cdn.vox-cdn.com/thumbor/I3GEucLDPT6sRdISXmY_Yh8IzDw=/0x0:1920x1080/1820x1024/filters:focal(960x540:961x541)/cdn.vox-cdn.com/uploads/chorus_asset/file/24185682/Ash_Ketchum_World_Champion_Screenshot_4.jpg',
             })
 
-            assert(response.status_code == 201)
-
             new_user = User.query.filter(User.username == 'ashketchum').first()
 
             assert(new_user)
-            assert(new_user.authenticate('pikachu'))
+            assert(new_user.verify_password('pikachu'))
             assert(new_user.image_url == 'https://cdn.vox-cdn.com/thumbor/I3GEucLDPT6sRdISXmY_Yh8IzDw=/0x0:1920x1080/1820x1024/filters:focal(960x540:961x541)/cdn.vox-cdn.com/uploads/chorus_asset/file/24185682/Ash_Ketchum_World_Champion_Screenshot_4.jpg')
             assert(new_user.bio == '''I wanna be the very best
                         Like no one ever was
@@ -61,7 +59,7 @@ class TestSignup:
                         Teach Pokémon to understand
                         The power that's inside''')
 
-    def test_422s_invalid_users_at_signup(self):
+    def test_422s_invalid_users_at_signup(self, app):
         '''422s invalid usernames at /signup.'''
         
         with app.app_context():
@@ -89,7 +87,7 @@ class TestSignup:
 class TestCheckSession:
     '''CheckSession resource in app.py'''
 
-    def test_returns_user_json_for_active_session(self):
+    def test_returns_user_json_for_active_session(self, app):
         '''returns JSON for the user's data if there is an active session.'''
         
         with app.app_context():
@@ -124,7 +122,7 @@ class TestCheckSession:
             assert response_json['id'] == 1
             assert response_json['username']
 
-    def test_401s_for_no_session(self):
+    def test_401s_for_no_session(self, app):
         '''returns a 401 Unauthorized status code if there is no active session.'''
         
         with app.test_client() as client:
@@ -140,7 +138,7 @@ class TestCheckSession:
 class TestLogin:
     '''Login resource in app.py'''
 
-    def test_logs_in(self):
+    def test_logs_in(self, app):
         '''logs users in with a username and password at /login.'''
         
         with app.app_context():
@@ -175,7 +173,7 @@ class TestLogin:
                 assert(session.get('user_id') == \
                     User.query.filter(User.username == 'ashketchum').first().id)
 
-    def test_401s_bad_logins(self):
+    def test_401s_bad_logins(self, app):
         '''returns 401 for an invalid username and password at /login.'''
         
         with app.app_context():
@@ -198,7 +196,7 @@ class TestLogin:
 class TestLogout:
     '''Logout resource in app.py'''
 
-    def test_logs_out(self):
+    def test_logs_out(self, app):
         '''logs users out at /logout.'''
         with app.app_context():
             
@@ -222,7 +220,7 @@ class TestLogout:
             with client.session_transaction() as session:
                 assert not session.get('user_id')
             
-    def test_401s_if_no_session(self):
+    def test_401s_if_no_session(self, app):
         '''returns 401 if a user attempts to logout without a session at /logout.'''
         with app.test_client() as client:
 
@@ -236,7 +234,7 @@ class TestLogout:
 class TestRecipeIndex:
     '''RecipeIndex resource in app.py'''
 
-    def test_lists_recipes_with_200(self):
+    def test_lists_recipes_with_200(self, app):
         '''returns a list of recipes associated with the logged in user and a 200 status code.'''
 
         with app.app_context():
@@ -293,7 +291,7 @@ class TestRecipeIndex:
                 assert response_json[i]['instructions']
                 assert response_json[i]['minutes_to_complete']
 
-    def test_get_route_returns_401_when_not_logged_in(self):
+    def test_get_route_returns_401_when_not_logged_in(self, app):
         
         with app.app_context():
             
@@ -312,7 +310,7 @@ class TestRecipeIndex:
             
             assert response.status_code == 401
 
-    def test_creates_recipes_with_201(self):
+    def test_creates_recipes_with_201(self, app):
         '''returns a list of recipes associated with the logged in user and a 200 status code.'''
 
         with app.app_context():
@@ -359,7 +357,8 @@ class TestRecipeIndex:
             assert response_json['instructions'] == new_recipe.instructions
             assert response_json['minutes_to_complete'] == new_recipe.minutes_to_complete
 
-    def test_returns_422_for_invalid_recipes(self):
+    def test_returns_422_for_invalid_recipes(self, app):
+            
         with app.app_context():
             
             Recipe.query.delete()

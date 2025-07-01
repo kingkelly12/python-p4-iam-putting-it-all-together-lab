@@ -19,7 +19,7 @@ def app():
 class TestRecipe:
     '''User in models.py'''
 
-    def test_has_attributes(self):
+    def test_has_attributes(self, app):
         '''has attributes title, instructions, and minutes_to_complete.'''
         
         with app.app_context():
@@ -38,6 +38,7 @@ class TestRecipe:
                         """ smallness northward situation few her certainty""" + \
                         """ something.""",
                     minutes_to_complete=60,
+                    user_id=1
                     )
 
             db.session.add(recipe)
@@ -56,7 +57,7 @@ class TestRecipe:
                     """ something."""
             assert new_recipe.minutes_to_complete == 60
 
-    def test_requires_title(self):
+    def test_requires_title(self, app):
         '''requires each record to have a title.'''
 
         with app.app_context():
@@ -70,7 +71,7 @@ class TestRecipe:
                 db.session.add(recipe)
                 db.session.commit()
 
-    def test_requires_50_plus_char_instructions(self):
+    def test_requires_50_plus_char_instructions(self, app):
         with app.app_context():
 
             Recipe.query.delete()
